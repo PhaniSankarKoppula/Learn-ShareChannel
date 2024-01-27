@@ -1,0 +1,703 @@
+ATA ANALYTICS WITH DAX (CLASS 16)–TIME INTELLIGENCE FUNCTIONS FOR TABULAR CUBE|POWER BI|POWER QUERY
+Group 1:- Opening & Closing Balance   
+	OPENINGBALANCEMONTH
+	OPENINGBALANCEQUARTER
+	OPENINGBALANCEYEAR
+	CLOSINGBALANCEMONTH
+	CLOSINGBALANCEQUARTER
+	CLOSINGBALANCEYEAR
+	
+Fetches Opening/Closing period Value of given measures.
+
+Syntax:-
+
+OPENINGBALANCEMONTH(<expression>,<dates>[,<filter>])
+OPENINGGBALANCEQUARTER(<expression>,<dates>[,<filter>])
+OPENINGBALANCEYEAR(<expression>,<dates>[,<filter>][,<year_end_date>])
+CLOSINGBALANCEMONTH(<expression>,<dates>[,<filter>])
+CLOSINGBALANCEQUARTER(<expression>,<dates>[,<filter>])
+CLOSINGBALANCEYEAR(<expression>,<dates>[,<filter>][,<year_end_date>])
+
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS(
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"RedInterNetSales",CALCULATE( Sum('Internet Sales'[Sales Amount]),'Product'[Color]="Red")
+		), 'Date'[Date] in { DATE ( 2012, 11, 30 ),DATE ( 2012, 12, 31 )} )
+Order by 'Date'[Month Calendar]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"Red_OpeningBlanceMonth",OPENINGBALANCEMONTH(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"OpeningBlanceMonth",OPENINGBALANCEMONTH(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red"),
+		"ClosingBlanceMonth",CLOSINGBALANCEMONTH(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"RedClosingBlanceMonth",CLOSINGBALANCEMONTH(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red")	
+		), 'Date'[Calendar Year]=2012 , 'Date'[Month Calendar]="12 - December")
+order by 'Date'[Date]
+
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Calendar Quarter],
+		'Date'[Month Calendar],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"RedInterNetSales",CALCULATE( Sum('Internet Sales'[Sales Amount]),'Product'[Color]="Red")
+		), 'Date'[Calendar Year]=2012 ,'Date'[Date] in { Date(2012,03,31),Date(2012,06,30)})
+GO
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"OpeningBlanceQuarter",OPENINGBALANCEQUARTER(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"RedOpeningBlanceQuarter",OPENINGBALANCEQUARTER(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red"),
+		"ClosingBlanceQuarter",CLOSINGBALANCEQUARTER(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"RedClosingBlanceQuarter",CLOSINGBALANCEQUARTER(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red")
+		), 'Date'[Date]=Date(2012,05,25))
+order by 'Date'[Date]
+
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Calendar Quarter],
+		'Date'[Month Calendar],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"RedInterNetSales",CALCULATE( Sum('Internet Sales'[Sales Amount]),'Product'[Color]="Red")
+		), 'Date'[Calendar Year] in {2011,2012} ,'Date'[Date] in { Date(2011,12,31),Date(2012,12,31)})
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"OpeningBlanceYear",OPENINGBALANCEYEAR(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"RedOpeningBlanceYear",OPENINGBALANCEYEAR(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red"),
+		"ClosingBlanceYear",CLOSINGBALANCEYEAR(Sum('Internet Sales'[Sales Amount]), 'Date'[Date]),
+		"RedClosingBlanceYear",CLOSINGBALANCEYEAR(Sum('Internet Sales'[Sales Amount]), 'Date'[Date],'Product'[Color]="Red")
+		), 'Date'[Date]=Date(2012,05,25))
+order by 'Date'[Date]
+
+
+Group 2:- Dates
+DATEADD
+DATESBETWEEN
+DATESINPERIOD
+
+--DATEADD
+Returns a table that contains a column of dates, shifted either forward or backward in time by the specified number of intervals from the dates.
+If the dates in the current context do not form a contiguous interval, the function returns an error.
+
+DATEADD(<dates>,<number_of_intervals>,<interval>)
+
+	evaluate 
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		TREATAS({2012},'Date'[Calendar Year]),
+		"Previous YearDates",DATEADD('Date'[Date],-1,year),
+		"Future YearDates",DATEADD('Date'[Date],1,year),
+		"Future+1 YearDates",DATEADD('Date'[Date],2,year),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)
+	order by 'Date'[Calendar Year],'Date'[Month],'Date'[Date]
+
+
+-- DATESBETWEEN
+
+Returns a table that contains a column of dates that begins with a specified start date and continues until a specified end date.
+Start & End Dates are inclusive in results.
+Passing blank value in start date parameter it will taking as Min Date from the mentioned table.
+Passing blank value in end date parameter it will taking as Max Date from the mentioned table.
+DATESBETWEEN(<Dates>, <StartDate>, <EndDate>)
+
+
+	evaluate 
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESBETWEEN('Internet Sales'[Order Date],BLANK(),MAX('Internet Sales'[Order Date])),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)
+	order by 'Date'[Calendar Year],'Date'[Month],'Date'[Date]
+	
+	
+--DATESINPERIOD
+
+Returns a table that contains a column of dates that begins with a specified start date and continues for the specified number and type of date intervals.
+This function is suited to pass as a filter to the CALCULATE function. Use it to filter an expression by standard date intervals such as days, months, quarters, or years.
+
+
+DATESINPERIOD(<dates>, <start_date>, <number_of_intervals>, <interval>)
+Dates:-A column reference containing dates.
+StartDate:- Start date.
+NumberOfIntervals:- The number of intervals.
+Interval:- One of: Day, Month, Quarter, Year.
+
+evaluate 
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESINPERIOD('Internet Sales'[Order Date],MAX('Internet Sales'[Order Date]),-1,YEAR),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)
+	order by 'Date'[Calendar Year],'Date'[Month],'Date'[Date]
+	
+	
+Group 3:- To Date
+DATESMTD:- Returns a table that contains a column of the dates for the month to date.
+DATESQTD:- Returns a table that contains a column of the dates for the Quarter to date.
+DATESYTD:- Returns a table that contains a column of the dates for the Year to date.
+TOTALMTD:- Returns a month-to-date value of the given expression or measure.
+TOTALQTD:- Returns a quarter-to-date value of the given expression or measure.
+TOTALYTD:- Returns a year-to-date value of the given expression or measure.
+
+
+DATESMTD(<dates>)
+DATESQTD(<dates>)
+DATESYTD(<dates> [,<year_end_date>]) 
+	year_end_date:- (optional) A literal string with a date that defines the year-end date. The default is December 31. "m-dd" or "dd-m".
+	
+TOTALMTD(<expression>,<dates>[,<filter>])
+TOTALQTD(<expression>,<dates>[,<filter>])
+TOTALYTD(<expression>,<dates>[,<filter>][,<year_end_date>])
+	year_end_date:- (optional) A literal string with a date that defines the year-end date. The default is December 31.
+					year_end_date can be specified as "6/30", "Jun 30", "30 June", or any string that resolves to a month/day. However, it is recommended you specify year_end_date using "month/day"
+	
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESMTD('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESQTD('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESYTD('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+	
+	
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		DATESYTD('Date'[Date],"03-31"),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"TOTALMTD",TOTALMTD(Sum('Internet Sales'[Sales Amount]),'Date'[Date]),
+		"TOTALQTD",TOTALQTD(Sum('Internet Sales'[Sales Amount]),'Date'[Date]),
+		"TOTALYTD",TOTALYTD(Sum('Internet Sales'[Sales Amount]),'Date'[Date])
+		)
+		, 'Date'[Date] in { DATE ( 2012, 12, 1 ),DATE ( 2012, 12, 2 ),DATE ( 2012, 12, 3 ),DATE ( 2012, 12, 4 ) } )
+Order by 'Date'[Date]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"TOTALQTD",TOTALQTD(Sum('Internet Sales'[Sales Amount]),'Date'[Date])
+		)
+		, 'Date'[Date] >= DATE ( 2012, 10, 1 ) && 'Date'[Date] <= DATE ( 2012, 12, 31 ) )
+Order by 'Date'[Date]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"TOTALYTD",TOTALYTD(Sum('Internet Sales'[Sales Amount]),'Date'[Date])
+		)
+		, 'Date'[Date] >= DATE ( 2012, 1, 1 ) && 'Date'[Date] <= DATE ( 2012, 12, 31 ) )
+Order by 'Date'[Date]
+
+Group 4:- Start & End OF
+STARTOFMONTH
+STARTOFQUARTER
+STARTOFYEAR
+ENDOFMONTH
+ENDOFQUARTER
+ENDOFYEAR
+
+
+--ENDOFMONTH/ENDOFQUARTER/ENDOFYEAR
+
+Last date of the month/last date of the Quarter/last date of the Year.
+ENDOFMONTH(<dates>)
+ENDOFQUARTER(<dates>)
+ENDOFYEAR(<dates> [,<year_end_date>])
+	year_end_date	(optional) A literal string with a date that defines the year-end date. The default is December 31.
+						
+
+Evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		STARTOFMONTH('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+	
+
+Evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		ENDOFMONTH('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+
+Evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		STARTOFQUARTER('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+Evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		ENDOFQUARTER('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		STARTOFYEAR('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		ENDOFYEAR('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2013, 12, 6 ))
+Order by 'Date'[Date]
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		STARTOFYEAR('Date'[Date],"03-03-2013"),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2012, 12, 6 ))
+Order by 'Date'[Date]	
+	
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		ENDOFYEAR('Date'[Date],"03-03-2013"),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] = DATE ( 2012, 12, 6 ))
+Order by 'Date'[Date]
+
+
+Group 5:- First & Last Date
+FIRSTDATE
+FIRSTNONBLANK
+LASTDATE
+LASTNONBLANK
+
+
+
+--FIRSTDATE
+Returns the first date transactions from given set of dates.
+FIRSTDATE(<dates>)
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		FIRSTDATE('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] in { DATE ( 2012, 12, 6 ),DATE ( 2012, 12, 4 ),DATE ( 2012, 12, 2 ) } )
+Order by 'Date'[Date]
+
+--LASTDATE
+-- Last date in the specified date.
+LASTDATE(<dates>)
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		LASTDATE('Date'[Date]),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)), 'Date'[Date] in { DATE ( 2012, 12, 6 ),DATE ( 2012, 12, 4 ),DATE ( 2012, 12, 2 ) } )
+Order by 'Date'[Date]
+
+
+
+
+--FIRSTNONBLANK
+Fetches first non empty or blank value for given context.
+FIRSTNONBLANK(<column>,<expression>)
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		FIRSTNONBLANK('Date'[Date],'Internet Sales'[Internet Total Discount Amount]),
+		"InterNetSales",'Internet Sales'[Internet Total Discount Amount])
+		), 'Date'[Date] in { DATE ( 2012, 12, 6 ),DATE ( 2012, 12, 4 ),DATE ( 2012, 12, 2 ) } )
+Order by 'Date'[Date]
+
+--LASTNONBLANK
+Fetches first non empty or blank value for given context.
+FIRSTNONBLANK(<column>,<expression>)
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		LASTNONBLANK('Date'[Date],'Internet Sales'[Internet Total Discount Amount]),
+		"InterNetSales",'Internet Sales'[Internet Total Discount Amount])
+		), 'Date'[Date] in { DATE ( 2012, 12, 6 ),DATE ( 2012, 12, 4 ),DATE ( 2012, 12, 2 ) } )
+Order by 'Date'[Date]
+
+
+
+Group 6:- Next & Previous 
+NEXTDAY
+NEXTMONTH
+NEXTQUARTER
+NEXTYEAR
+PREVIOUSDAY
+PREVIOUSMONTH
+PREVIOUSQUARTER
+PREVIOUSYEAR
+
+--NEXTDAY/PREVIOUSDAY
+--Returns the nextday/PreviousDay value of specified date.
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"PreviousDaySales",CALCULATE(Sum('Internet Sales'[Sales Amount]), PREVIOUSDAY('Date'[Date])),
+		"NextDaySales",CALCULATE(Sum('Internet Sales'[Sales Amount]), NEXTDAY('Date'[Date]))
+		)
+		), 'Date'[Date] in { DATE ( 2012, 12, 2 ),DATE ( 2012, 12, 3 ),DATE ( 2012, 12, 4 ) } )
+Order by 'Date'[Date]
+
+--NEXTMONTH/PREVIOUSMONTH
+
+Fetches the next/Previous month details for specified date.
+NEXTMONTH(<dates>)
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		--'Date'[Date],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"NextMonthSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), NEXTMONTH('Date'[Date])),
+		"PreviousMonthSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), PREVIOUSMONTH('Date'[Date]))
+		)
+		), 'Date'[Date] in { DATE ( 2012, 12, 1 ),DATE ( 2012, 11, 1 )} )
+Order by 'Date'[Month]
+GO
+evaluate 
+CALCULATETABLE(
+
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Month],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)
+		, 'Date'[Month] in {10,11,12},'Date'[Calendar Year]=2012)
+Order by 'Date'[Month]
+
+
+--NEXTQUARTER
+Fetch the next querter details for specified date.
+NEXTQUARTER(<dates>)
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"NextQuarterSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), NEXTQUARTER('Date'[Date])),
+		"PreviousQuarterales",CALCULATE(Sum('Internet Sales'[Sales Amount]), PREVIOUSQUARTER('Date'[Date]))
+		)
+		), 'Date'[Date] in { DATE ( 2012, 05, 1 ),DATE ( 2012, 04, 1 )} )
+Order by 'Date'[Calendar Quarter]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Calendar Quarter],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)
+		, 'Date'[Calendar Quarter] in {1,2,3}, 'Date'[Calendar Year]=2012)
+Order by 'Date'[Calendar Quarter]
+
+--NEXTYEAR/PREVIOUSYEAR
+Fetches the next/Previous year details.
+NEXTYEAR(<dates>[,<year_end_date>])
+PREVIOUSYEAR(<dates>[,<year_end_date>])
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"NextYearSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), NEXTYEAR('Date'[Date])),
+		"PreviousYearSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), PREVIOUSYEAR('Date'[Date]))
+		)
+		), 'Date'[Date] in { DATE ( 2012, 12, 1 ),DATE ( 2012, 11, 1 )} )
+Order by 'Date'[Calendar Quarter]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		)		, 'Date'[Calendar Year] in {2011,2012,2013})
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"NextYearSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), NEXTYEAR('Date'[Date],"31/12/2011")),
+		"PreviousYearSales",CALCULATE(Sum('Internet Sales'[Sales Amount]), PREVIOUSYEAR('Date'[Date],"31/12/2011"))
+		)
+		), 'Date'[Date] in { DATE ( 2011, 12, 1 )} )
+Order by 'Date'[Calendar Quarter]
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		), 'Date'[Date]>= Date(2012,01,01) && 'Date'[Date]<= Date(2012,12,31))
+GO
+evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		), 'Date'[Date]>= Date(2010,01,01) && 'Date'[Date]<= Date(2010,12,31))
+
+
+
+Group 7:- Other 
+PARALLELPERIOD
+SAMEPERIODLASTYEAR
+
+--PARALLELPERIOD
+Fetches period parallel to the dates in the specified dates column.
+PARALLELPERIOD(<dates>,<number_of_intervals>,<interval>)
+	interval:- The interval by which to shift the dates. The value for interval can be one of the following: year, quarter, month.
+	
+	
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		PARALLELPERIOD('Date'[Date],-1,MONTH),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		), 'Date'[Date]=Date(2012,05,25))
+order by 'Date'[Date]
+
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		PARALLELPERIOD('Date'[Date],-1,QUARTER),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		), 'Date'[Date]=Date(2012,05,25))
+order by 'Date'[Date]
+
+Evaluate 
+CALCULATETABLE(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date],
+		PARALLELPERIOD('Date'[Date],-1,YEAR),
+		"InterNetSales",Sum('Internet Sales'[Sales Amount])
+		), 'Date'[Date]=Date(2012,05,25))
+order by 'Date'[Date]
+
+
+--SAMEPERIODLASTYEAR
+Fetches last year same period value, works like parallel period function, std date value applies.
+SAMEPERIODLASTYEAR(<dates>)
+
+
+evaluate 
+CALCULATETABLE(
+(
+		SUMMARIZECOLUMNS( 
+		'Date'[Calendar Year],
+		'Date'[Month Calendar],
+		'Date'[Calendar Quarter],
+		'Date'[Date] ,
+		"InterNetSales",Sum('Internet Sales'[Sales Amount]),
+		"SAMEPERIODLASTYEAR",CALCULATE(Sum('Internet Sales'[Sales Amount]), SAMEPERIODLASTYEAR('Date'[Date]))
+		)
+		), 'Date'[Date] in { DATE ( 2013, 05, 1 ), DATE ( 2012, 05, 1 ),DATE ( 2011, 05, 1 )} )
+Order by 'Date'[Date] 
