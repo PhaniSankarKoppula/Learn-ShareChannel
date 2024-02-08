@@ -1,0 +1,438 @@
+--COMBINEVALUES
+
+--COMBINEVALUES(<delimiter>, <expression>, <expression>[, <expression>]…)
+
+Evaluate
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"NewColumnsName", COMBINEVALUES("-",RELATED('DimBuyerCustomer'[BuyerCustomerName]),RELATED(DimBuyerGeo[Buyer Geo Code])))
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"NewColumnsName", COMBINEVALUES("-",RELATED('DimBuyerCustomer'[BuyerCustomerName]),RELATED(DimBuyerGeo[Buyer Geo Code]))),
+	[NewColumnsName],
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+
+EVALUATE
+DISTINCT (
+    SELECTCOLUMNS ( 'DimTime', "CY Month With Quarter", COMBINEVALUES ( ", ", [CY_Month], [CY_Quarter])))
+	
+
+
+--CONCATENATE
+	--Joins two text strings into one text string.
+	--CONCATENATE(<text1>, <text2>)
+
+Evaluate
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"ConcatenateColumn", CONCATENATE(RELATED('DimBuyerCustomer'[BuyerCustomerName]),RELATED(DimBuyerGeo[Buyer Geo Code])),
+	"ConcatenateColumn2", CONCATENATE(RELATED('DimBuyerCustomer'[BuyerCustomerName]),CONCATENATE("-",RELATED(DimBuyerGeo[Buyer Geo Code])))	
+	)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"ConcatenateColumn2", CONCATENATE(RELATED('DimBuyerCustomer'[BuyerCustomerName]),CONCATENATE("-",RELATED(DimBuyerGeo[Buyer Geo Code])))),
+	[ConcatenateColumn2],
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+
+EVALUATE
+DISTINCT (
+    SELECTCOLUMNS ( 'DimTime', "CY Month With Quarter", CONCATENATE ([CY_Month],[CY_Quarter])))
+	
+
+--CONCATENATEX
+	--Concatenates the result of an expression evaluated for each row in a table.
+	--CONCATENATEX(<table>, <expression>[, <delimiter> [, <orderBy_expression> [, <order>]]...])
+
+Evaluate
+DISTINCT(
+	SELECTCOLUMNS('DimProduct',
+				"ModelName",DimProduct[Model Name],
+				"ProductLine",DimProduct[Product Line],
+				"ConatenateX", CONCATENATEX('DimProduct',DimProduct[Model Name] & "," & DimProduct[Product Line]),
+				"Conatenate", CONCATENATE(DimProduct[Model Name], DimProduct[Product Line])
+				)
+				)
+
+Evaluate
+DISTINCT(
+	SELECTCOLUMNS('DimProduct',
+				"ModelName",DimProduct[Model Name],
+				"ConatenateX", CONCATENATEX('DimProduct',DimProduct[Model Name] & "," )
+				)
+				)
+GO
+Evaluate
+	SUMMARIZE('DimProduct',DimProduct[Product Line],
+				"ConatenateX", CONCATENATEX(
+				CALCULATETABLE('DimProduct'),
+				DimProduct[Model Name] , ",",DimProduct[Model Name],DESC)
+				)
+GO
+Evaluate
+	SUMMARIZE('DimProduct',DimProduct[Product Line],
+				"ConatenateX", CONCATENATEX(
+				CALCULATETABLE('DimProduct'),
+				DimProduct[Model Name] , ",",DimProduct[Model Name],ASC)
+				)
+Evaluate
+	SUMMARIZE('DimProduct',DimProduct[Product Line],
+				"ConatenateX", CONCATENATEX(
+				CALCULATETABLE('DimProduct'),
+				DimProduct[Model Name] &"," & DimProduct[Product Line] , "|",DimProduct[Model Name],DESC)
+				)
+GO
+Evaluate
+	SUMMARIZE('DimProduct',DimProduct[Product Line],
+				"ConatenateX", CONCATENATEX(
+				CALCULATETABLE('DimProduct'),
+				DimProduct[Model Name] &"," & DimProduct[Product Line] , "|",DimProduct[Model Name],ASC)
+				)
+				
+--EXACT
+	--Compares two text strings and returns TRUE if they are exactly the same, otherwise returns FALSE. EXACT is case-sensitive but ignores formatting differences. 
+	--EXACT is case-sensitive
+	--EXACT(<text1>,<text2>)
+
+Define
+ Var CyMonth="July 2020"
+Evaluate
+Distinct(
+	SELECTCOLUMNS('DimTime',
+					"CyMonth",DimTime[CY_Month],
+					"CyQuarter",DimTime[CY_Quarter],
+					"MatchValue",EXACT(DimTime[CY_Month],CyMonth),
+					"MatchValue2",EXACT(DimTime[CY_Month],DimTime[CY_Quarter])
+					))
+					
+					
+--FIND
+	--Returns the starting position of one text string within another text string. FIND is case-sensitive.
+	--FIND(<find_text>, <within_text>[, [<start_num>][, <NotFoundValue>]])
+
+Evaluate
+Distinct(
+	SELECTCOLUMNS('DimProduct',
+	"ModelName",DimProduct[Model Name],
+	"ProductLine",DimProduct[Product Line],
+	"FindRoadPostion",FIND("Road",'DimProduct'[Model Name],1,0),
+	"Find1Postion",FIND("1",'DimProduct'[Model Name],1,0)
+					))
+
+DEFINE VAR String="My Learn & Share Channel having 90 useful videos to cover on SSAS Cubes"
+Evaluate
+{FIND("Cubes",String,1,0)}
+
+
+
+--FIXED
+	--Rounds a number to the specified number of decimals and returns the result as text. You can specify that the result be returned with or without commas.
+	--FIXED(<number>, <decimals>, <no_commas>)
+		--decimals:- How many positions needs to be displayed.
+		--no_commas :- 0 or omitted then display the value in text, 1 means avoid commas.
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"ConcatenateColumn2", CONCATENATE(RELATED('DimBuyerCustomer'[BuyerCustomerName]),CONCATENATE("-",RELATED(DimBuyerGeo[Buyer Geo Code])))),
+	[ConcatenateColumn2],
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]),
+	"Sales2",FIXED( Sum('Fact_Sales'[SalesInNetUSD]),0,0), 
+	"Sales21",FIXED( Sum('Fact_Sales'[SalesInNetUSD]),0,1),
+	"Sales3",FIXED( Sum('Fact_Sales'[SalesInNetUSD]),1,1),
+	"Sales4",FIXED( Sum('Fact_Sales'[SalesInNetUSD]),5,1)
+	)
+
+	
+--FORMAT
+	--Converts a value to text according to the specified format.
+	--FORMAT(<value>, <format_string>[, <locale_name>])
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[TransDate],
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]),
+	"Sales General Number",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"General Number"),
+	"Sales Currency",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"Currency"),
+	"Sales Fixed",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"Fixed"),
+	"Sales Standard",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"Standard"),
+	"Sales Percent",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"Percent"),
+	"Sales Scientific",FORMAT( Sum('Fact_Sales'[SalesInNetUSD]),"Scientific"),
+	--------------------------------------------------------------------------
+	"DateFormat1",FORMAT([TransDate],"mm/dd/yyyy"),
+	"DateFormat2",FORMAT([TransDate],"mm/dd/yy"),
+	"DateFormat3",FORMAT([TransDate],"c"),
+	"DateFormat4",FORMAT([TransDate],"dddd")
+	)
+
+https://learn.microsoft.com/en-us/dax/format-function-dax
+
+
+--LEFT
+	--Returns the specified number of characters from the start of a text string.
+	--LEFT(<text>, <num_chars>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"FirstLetter",Left([CustomerName],1),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+--MID
+	--Returns a string of characters from the middle of a text string, given a starting position and length.
+	--MID(<text>, <start_num>, <num_chars>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"MidCustomer",MID([CustomerName],2,4),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+--RIGHT
+	--Returns the specified number of characters from the start of a text string.
+	--RIGH(<text>, <num_chars>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"FirstLetter",RIGHT([CustomerName],1),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+	
+--LEN
+	--Returns the number of characters in a text string.
+	--LEN(<text>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	[TransDate],
+	"LengthOFCustomerName",Len([CustomerName]),
+	"LengthOfTransactionDate",Len(FORMAT([TransDate],"c")),
+	"LengthOfTransactionDate2",Len(FORMAT([TransDate],"mm/dd/yyyy")),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+
+	--Converts all letters in a text string to lowercase.
+	--LOWER(<text>)
+	--UPPER(<text>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	[TransDate],
+	"Lower",Lower([CustomerName]),
+	"Upper",UPPER([CustomerName]),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+--REPLACE
+	--REPLACE replaces part of a text string, based on the number of characters you specify, with a different text string.
+	--REPLACE(<old_text>, <start_num>, <num_chars>, <new_text>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	[TransDate],
+	"Replace",REPLACE([CustomerName],1,2,"DAXDEMO"),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+--REPT
+	--Repeats text a given number of times. Use REPT to fill a cell with a number of instances of a text string.
+	--REPT(<text>, <num_times>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"Rept",REPT([CustomerName],2),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+	
+	
+--SEARCH
+	--Returns the number of the character at which a specific character or text string is first found, reading left to right. Search is case-insensitive and accent sensitive
+	--SEARCH(<find_text>, <within_text>[, [<start_num>][, <NotFoundValue>]])
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	[TransDate],
+	"Search",Search("Bank",[CustomerName],1,0),
+	"SearchWild",Search("B*",[CustomerName],1,0),
+	"FindRoadPostion",FIND("Bank",[CustomerName],1,0),
+	"FindRoadPostion2",FIND("B*",[CustomerName],1,0),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+
+--SUBSTITUTE
+	--Replaces existing text with new text in a text string.
+	--SUBSTITUTE(<text>, <old_text>, <new_text>, <instance_num>)
+	--SUBSTITUTE:- Replace specific text in a text string; 
+	--REPLACE:- Replace any text of variable length that occurs in a specific location in a text string.
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"SUBSTITUTE",SUBSTITUTE([CustomerName],"Bank","Banks"),
+	"SUBSTITUTE2",SUBSTITUTE( REPT([CustomerName],5),"Bank","Banks",1),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD])
+	)
+
+
+--TRIM
+	--Removes all spaces from text except for single spaces between words.
+	--TRIM(<text>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"Trim",TRIM([CustomerName]),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+
+--UNICHAR
+	--Returns the Unicode character referenced by the numeric value.
+	--UNICHAR(number)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"Unichar",UNICHAR(13),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+	
+--UNICODE
+	--Returns the number (code point) corresponding to the first character of the text.
+	--UNICODE( <Text> )
+	--ASCII Codes ASCII is an 8-bit code. That is, it uses eight bits to represent a letter or a punctuation mark. 
+	--Eight bits are called a byte. A binary code with eight digits, such as 1101 10112, can be stored in one byte of computer memory.
+https://toolsaday.com/text-tools/text-to-ascii
+
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"CustomerName",RELATED('DimBuyerCustomer'[BuyerCustomerName]),
+	"CountryCode",RELATED('DimBuyerGeo'[Buyer Geo Code]),
+	"TransDate",'Fact_Sales'[Transaction Date]
+	),
+	[CustomerName],
+	"Unicode",UNICODE([CustomerName]),
+	"Unichar",UNICHAR(UNICODE([CustomerName])),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+	
+	
+--VALUE
+	--Converts a text string that represents a number to a number.
+	--VALUE(<text>)
+
+Evaluate
+SUMMARIZE(
+	SELECTCOLUMNS('Fact_Sales',
+	"Sales",Fact_Sales[SalesInNetUSD],
+	"ModelName", RELATED('DimProduct'[Model Name])
+	),
+	[ModelName],
+	"Value",VALUE(RIGHT([ModelName],3)),
+	"Sales",Sum('Fact_Sales'[SalesInNetUSD]))
+
+DEFINE VAR VAL="1234"
+EVALUATE
+	{
+	(VAL,ISNUMBER(VAL)),
+	(VAL,ISNUMBER(VALUE(VAL))),
+	(VAL,ISTEXT(VAL)),
+	(VAL,ISTEXT(VALUE(VAL)))
+	}
